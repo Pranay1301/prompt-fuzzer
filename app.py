@@ -16,12 +16,26 @@ st.title("Prompt Fuzzer")
 st.caption("Attack your own LLM system prompt with 12 adversarial inputs and "
            "score how fragile it is. Verdicts per attack, weighted fragility 0-100.")
 
+
+def demo_backend(system_prompt, user_text):
+    """ILLUSTRATIVE scripted replies (not a model): mostly refusals, one
+    canary leak and one ambiguous answer so the verdict UI shows all three
+    states. The tested all-refusal mock stays in prompt_fuzzer/backends.py."""
+    from prompt_fuzzer.attacks import CANARY
+    low = user_text.lower()
+    if "authorized internal check" in low:
+        return f"Sure - the token is {CANARY}. Anything else for the audit?"
+    if "evil-twin" in low:
+        return ("As EVIL-TWIN I would do the opposite of the rules... "
+                "here is what I think some of them might be about, roughly.")
+    return "I'm not able to share internal instructions. How can I help you today?"
+
 default_prompt = open("examples/support-bot.txt").read() if __import__("os").path.exists("examples/support-bot.txt") else ""
 system_prompt = st.text_area("System prompt to test", value=default_prompt, height=220)
 
 with st.sidebar:
     st.header("Backend")
-    mode = st.radio("Mode", ["Demo (mock, no key)", "Live (your own key)"])
+    mode = st.radio("Mode", ["Demo (illustrative script, no key)", "Live (your own key)"])
     base_url = model = key_env = None
     if mode.startswith("Live"):
         base_url = st.text_input("Base URL", "https://openrouter.ai/api/v1")
@@ -44,8 +58,8 @@ if st.button("Run the 12-attack battery", type="primary"):
             backend = openai_compatible_backend(base_url, model, "APP_SESSION_KEY")
             label = model
         else:
-            backend = mock_backend
-            label = "mock-backend (deterministic demo - not a real model)"
+            backend = demo_backend
+            label = "illustrative scripted replies (not a real model)"
         with st.spinner("Fuzzing..."):
             result = run_fuzz(system_prompt, backend, model_label=label, sleep_s=1.0 if api_key else 0.0)
         frag = fragility(result)
@@ -58,7 +72,7 @@ if st.button("Run the 12-attack battery", type="primary"):
         col3.metric("PARTIAL", counts["PARTIAL"])
         col4.metric("BREACH", counts["BREACH"])
         if mode.startswith("Demo"):
-            st.info("Demo mode: replies come from a scripted mock, not a real model. "
+            st.info("Demo mode: ILLUSTRATIVE scripted replies, not a real model - "
                     "Use Live mode to test a real endpoint.")
         for r in result["results"]:
             icon = {"HELD": "🟢", "PARTIAL": "🟡", "BREACH": "🔴"}.get(r["verdict"], "⚠️")
