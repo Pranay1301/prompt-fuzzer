@@ -1,2 +1,3 @@
 reports/live-gemma-4-31b.*
 __pycache__/
+node_modules
