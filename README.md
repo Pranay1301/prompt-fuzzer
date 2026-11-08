@@ -9,6 +9,16 @@ multilingual pivots, context floods, format smuggling, few-shot poisoning,
 refusal bait, indirect continuation - judges every reply, and produces a
 weighted fragility score (0-100) plus a shareable HTML report.
 
+## Live demo
+
+- **Hosted app (Render, free tier):** https://prompt-fuzzer-dbhm.onrender.com -
+  runs in Demo mode with no key (clearly labeled illustrative scripted replies)
+  or Live mode with your own OpenRouter key (kept in session memory only,
+  never stored or logged). Sleeps when idle; first load can take a minute.
+- **Real run report (static):** https://pranay1301.github.io/prompt-fuzzer/reports/live-nemotron-ultra.html -
+  an actual 12-attack battery against `nvidia/nemotron-3-ultra-550b-a55b:free`
+  (a verified $0 OpenRouter route), not a mock.
+
 ## Why
 
 "Seems fine when I try it" is not evidence. This gives you a repeatable
